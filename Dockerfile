@@ -1,8 +1,13 @@
-# Use official Nginx image
-FROM nginx:latest
+- name: Checkout repository
+  uses: actions/checkout@v3
 
-# Copy production build files into Nginx
-COPY ./dist /usr/share/nginx/html
+- name: Install Node dependencies
+  run: npm install
 
-# Expose port 80
-EXPOSE 80
+- name: Build Vite project
+  run: npm run build
+
+- name: Deploy to Docker Nginx
+  run: |
+    docker cp dist/. mysite-nginx:/usr/share/nginx/html
+    docker exec mysite-nginx nginx -s reload
