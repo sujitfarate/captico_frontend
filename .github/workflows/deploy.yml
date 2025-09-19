@@ -1,4 +1,4 @@
-name: Deploy Website to Local Docker Nginx
+name: Deploy Vite React App to Local Docker Nginx
 
 on:
   push:
@@ -7,17 +7,21 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted   # Run on your local machine (requires self-hosted runner)
+    runs-on: self-hosted   # Must be your local machine with Docker
 
     steps:
-    # Step 1: Checkout code
-    - name: Checkout repository
+    # Step 1: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Copy files into Docker Nginx container
-    - name: Deploy site to Docker Nginx
+    # Step 2: Install dependencies & build project
+    - name: Build Vite project
       run: |
-        echo "Copying site files into Docker container..."
-        docker cp mysite/. mysite-nginx:/usr/share/nginx/html
-        echo "Reloading Nginx..."
+        npm install
+        npm run build   # Output goes to dist/
+
+    # Step 3: Copy build files into Docker container
+    - name: Deploy to Docker Nginx
+      run: |
+        docker cp dist/. mysite-nginx:/usr/share/nginx/html
         docker exec mysite-nginx nginx -s reload
