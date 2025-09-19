@@ -3,7 +3,7 @@ name: Deploy Vite React App to Local Docker Nginx
 on:
   push:
     branches:
-      - main   # Trigger when code is pushed to main branch
+      - main   # Trigger deployment on push to main
 
 jobs:
   deploy:
@@ -11,17 +11,27 @@ jobs:
 
     steps:
     # Step 1: Checkout repository
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Install dependencies & build project
-    - name: Build Vite project
-      run: |
-        npm install
-        npm run build   # Output goes to dist/
+    # Step 2: Install Node.js (optional if already installed on runner)
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'   # Or your required Node version
 
-    # Step 3: Copy build files into Docker container
-    - name: Deploy to Docker Nginx
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Build Vite project
+    - name: Build project
+      run: npm run build
+
+    # Step 5: Deploy build to Docker Nginx
+    - name: Deploy to Docker container
       run: |
+        echo "Copying build files into Docker container..."
         docker cp dist/. mysite-nginx:/usr/share/nginx/html
+        echo "Reloading Nginx..."
         docker exec mysite-nginx nginx -s reload
